@@ -4,6 +4,8 @@ Takes two large spotify playlists, pulls 150 songs from each (customizable) and 
 
 Good for running nightly to always have a shuffled selection of two people's playlists, or expand it to more playlists and always have a shuffled daily selection if you have a very large set of playlists for your library.
 
+Names are extremely weird since they refer to specific playlists I'm doing this with.
+
 ## Improvements
 
 Needs a better paginator with a delay between requests, but works fine for now. However, this can drain your request limit quite fast, so consider using a custom paginator with delays. You can add one in each call to spotifyClient.PaginateAll()
