@@ -10,6 +10,7 @@ Needs a better paginator with a delay between requests, but works fine for now. 
 
 # SECRETS.cs format
 
+```
 // ReSharper disable InconsistentNaming because I like having secret constants be capitalized 
 namespace SpotifyPlaylistUtilities;
 
@@ -35,3 +36,4 @@ public class SECRETS
     /// </summary>
     public const string PLAYLIST_ID_SELECT_DAILY = "A364q9WwQ36hQK8D4tGj5v8S";
 }
+```
