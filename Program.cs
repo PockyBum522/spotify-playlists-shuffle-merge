@@ -16,6 +16,8 @@ public static class Program
 
     private static readonly List<string> AlreadyAddedTracks = new();
 
+    private const int NumberOfTracksToPutIntoDestinationPlaylist = 300;
+
     private static void Exiting()
     {
         Console.CursorVisible = true;
@@ -24,6 +26,8 @@ public static class Program
     public static async Task<int> Main()
     {
         var runTodayFlag = false;
+        
+        await CheckAuthenticationAndRun();
         
         while (true)
         {
@@ -82,8 +86,7 @@ public static class Program
         var authenticator = new PKCEAuthenticator(SECRETS.SPOTIFY_CLIENT_ID!, token!);
         authenticator.TokenRefreshed += (_, refreshedToken) => File.WriteAllText(CredentialsPath, JsonConvert.SerializeObject(refreshedToken));
 
-        var config = SpotifyClientConfig.CreateDefault()
-            .WithAuthenticator(authenticator);
+        var config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
 
         var spotifyClient = new SpotifyClient(config);
 
@@ -94,13 +97,15 @@ public static class Program
         var playlists = await spotifyClient.PaginateAll(await spotifyClient.Playlists.CurrentUsers().ConfigureAwait(false));
         ListAllPlaylistsWithId(playlists);
 
+        await Task.Delay(5000);
+
         await RemoveAllTracksFromWeebletdaysSelectDaily(spotifyClient);
         
         var allCuratedWeebletdaysTracks = await GetAllPlaylistTracks(SECRETS.PLAYLIST_ID_CURATED_WEEBLETDAYS, spotifyClient);
         var allSelectSelectionsTracks = await GetAllPlaylistTracks(SECRETS.PLAYLIST_ID_SELECT_SELECTIONS, spotifyClient);
         
-        var selectSelections150 = GetRandomTracks(allSelectSelectionsTracks, 150);
-        var curatedWeebletdays150 = GetRandomTracks(allCuratedWeebletdaysTracks, 150);
+        var selectSelections150 = GetRandomTracks(allSelectSelectionsTracks, NumberOfTracksToPutIntoDestinationPlaylist / 2);
+        var curatedWeebletdays150 = GetRandomTracks(allCuratedWeebletdaysTracks, NumberOfTracksToPutIntoDestinationPlaylist / 2);
         
         var allTracksTotal = new List<PlaylistTrack<IPlayableItem>>();
         
@@ -113,7 +118,11 @@ public static class Program
     private static async Task RemoveAllTracksFromWeebletdaysSelectDaily(SpotifyClient spotifyClient)
     {
         // Weebletdays Select Daily | ID: 6QQUbYHQyaiaYbK7BC56Il   
-        var allTracks = await GetAllPlaylistTracks("", spotifyClient);
+        var allTracks = await GetAllPlaylistTracks(SECRETS.PLAYLIST_ID_SELECT_DAILY, spotifyClient);
+
+        // Make sure we're clearing the right playlist
+        if (allTracks.Count > 301)
+            throw new Exception("More than 301 songs in playlist to be cleared. Are you sure this is ok? If so, fix code");
       
         var itemsToRemove = new List<string>();
         
@@ -137,7 +146,7 @@ public static class Program
 
     private static async Task Remove100ItemsFromWeebletdaysSelectDaily(SpotifyClient spotifyClient, List<string> itemsToRemove)
     {
-        // Otherwise, since we can only add 100 at a time:
+        // Otherwise, since we can only remove 100 at a time:
         var itemsToRemoveRequest = new PlaylistRemoveItemsRequest();
 
         itemsToRemoveRequest.Tracks = new List<PlaylistRemoveItemsRequest.Item>();
@@ -254,6 +263,9 @@ public static class Program
                 returnTracks.Add(playlistTrack);
             }
 
+            // Lazy rate-limiting (not really, but at least between tasks) 
+            await Task.Delay(10000);
+
             return returnTracks;
         }
         else
@@ -263,7 +275,7 @@ public static class Program
         }
     }
 
-    // private static FullPlaylist GetCuratedWeebletdaysPlaylist(IList<FullPlaylist> userPlaylists)
+    // private static FullPlaylist FindPlaylistById(IList<FullPlaylist> userPlaylists)
     // {
     //     foreach (var playlist in userPlaylists)
     //     {
@@ -321,6 +333,7 @@ public static class Program
         };
 
         var uri = request.ToUri();
+        
         try
         {
             BrowserUtil.Open(uri);
