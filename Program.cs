@@ -99,8 +99,8 @@ public static class Program
         var allCuratedWeebletdaysTracks = await GetAllPlaylistTracks(SECRETS.PLAYLIST_ID_CURATED_WEEBLETDAYS, spotifyClient);
         var allSelectSelectionsTracks = await GetAllPlaylistTracks(SECRETS.PLAYLIST_ID_SELECT_SELECTIONS, spotifyClient);
         
-        var curatedWeebletdays150 = GetRandomTracks(allCuratedWeebletdaysTracks, 150);
         var selectSelections150 = GetRandomTracks(allSelectSelectionsTracks, 150);
+        var curatedWeebletdays150 = GetRandomTracks(allCuratedWeebletdaysTracks, 150);
         
         var allTracksTotal = new List<PlaylistTrack<IPlayableItem>>();
         
