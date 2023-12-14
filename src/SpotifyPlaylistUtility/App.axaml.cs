@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using SpotifyPlaylistUtility.Logic;
 using SpotifyPlaylistUtility.ViewModels;
 using SpotifyPlaylistUtility.Views;
 
@@ -15,18 +16,23 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // Dependency Injection:
+        var loggerConfiguration = LoggerSetup.ConfigureLogger();
+        
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainViewModel()
+                DataContext = new MainViewModel(
+                    loggerConfiguration)
             };
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
             singleViewPlatform.MainView = new MainView
             {
-                DataContext = new MainViewModel()
+                DataContext = new MainViewModel(
+                    loggerConfiguration)
             };
         }
 

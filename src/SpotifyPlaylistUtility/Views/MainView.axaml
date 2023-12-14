@@ -6,11 +6,25 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SpotifyPlaylistUtility.Views.MainView"
              x:DataType="vm:MainViewModel">
-  <Design.DataContext>
-    <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-    <vm:MainViewModel />
-  </Design.DataContext>
+    
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE, to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainViewModel />
+    </Design.DataContext>
 
-  <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid ColumnDefinitions="*" RowDefinitions="1,1,1" Margin="10">
+        
+        <!-- Playlist ID entry -->
+        <StackPanel Orientation="Vertical" Margin="5">
+            
+            <TextBlock Text="Playlist ID to shuffle:" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            
+            <TextBox Text="{Binding SourcePlaylistId}" />
+            
+            <Button Content="Shuffle Playlist" Command="{Binding ShufflePlaylistInPlaceCommand}" />
+            
+        </StackPanel>
+        
+        
+    </Grid>
 </UserControl>
