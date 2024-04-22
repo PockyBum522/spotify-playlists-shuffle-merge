@@ -3,9 +3,10 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Browser;
 using Avalonia.ReactiveUI;
-using SpotifyPlaylistUtilitiesGui;
 
 [assembly: SupportedOSPlatform("browser")]
+
+namespace SpotifyPlaylistUtilitiesGui.Browser;
 
 internal sealed partial class Program
 {

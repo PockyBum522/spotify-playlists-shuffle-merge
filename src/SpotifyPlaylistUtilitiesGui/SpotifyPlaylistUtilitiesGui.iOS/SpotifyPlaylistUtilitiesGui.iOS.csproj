@@ -8,6 +8,10 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia.iOS" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Serilog" Version="4.0.0-dev-02149" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="5.1.0-dev-00943" />
+        <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.1-dev-00972" />
     </ItemGroup>
 
     <ItemGroup>
