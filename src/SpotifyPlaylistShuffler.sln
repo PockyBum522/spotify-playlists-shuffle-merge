@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyPlaylistUtilitiesCore", "SpotifyPlaylistUtilitiesCore\SpotifyPlaylistUtilitiesCore.csproj", "{89A6B8D4-EEA1-42CF-8B20-0C1987A0C110}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyPlaylistUtilitiesGui", "SpotifyPlaylistUtilitiesGui\SpotifyPlaylistUtilitiesGui\SpotifyPlaylistUtilitiesGui.csproj", "{8340E934-DCB5-4067-8CDB-7B48B5D774B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyPlaylistUtilitiesGui.Android", "SpotifyPlaylistUtilitiesGui\SpotifyPlaylistUtilitiesGui.Android\SpotifyPlaylistUtilitiesGui.Android.csproj", "{0324D58B-46BB-48E3-AA40-CF542D7579C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyPlaylistUtilitiesGui.Desktop", "SpotifyPlaylistUtilitiesGui\SpotifyPlaylistUtilitiesGui.Desktop\SpotifyPlaylistUtilitiesGui.Desktop.csproj", "{7CC7686A-2649-4753-B83F-92B825DA38CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyPlaylistUtilitiesGui.iOS", "SpotifyPlaylistUtilitiesGui\SpotifyPlaylistUtilitiesGui.iOS\SpotifyPlaylistUtilitiesGui.iOS.csproj", "{987A7719-A831-4254-905E-1FCA77CE3576}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyPlaylistUtilitiesGui.Browser", "SpotifyPlaylistUtilitiesGui\SpotifyPlaylistUtilitiesGui.Browser\SpotifyPlaylistUtilitiesGui.Browser.csproj", "{9BCFE710-3879-4D1A-A010-0D05C7646361}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpotifyPlaylistUtilitiesGui", "SpotifyPlaylistUtilitiesGui", "{32BB8297-59F7-4210-8A5B-C40F4F5410C9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{89A6B8D4-EEA1-42CF-8B20-0C1987A0C110}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89A6B8D4-EEA1-42CF-8B20-0C1987A0C110}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89A6B8D4-EEA1-42CF-8B20-0C1987A0C110}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89A6B8D4-EEA1-42CF-8B20-0C1987A0C110}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8340E934-DCB5-4067-8CDB-7B48B5D774B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8340E934-DCB5-4067-8CDB-7B48B5D774B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8340E934-DCB5-4067-8CDB-7B48B5D774B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8340E934-DCB5-4067-8CDB-7B48B5D774B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0324D58B-46BB-48E3-AA40-CF542D7579C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0324D58B-46BB-48E3-AA40-CF542D7579C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0324D58B-46BB-48E3-AA40-CF542D7579C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0324D58B-46BB-48E3-AA40-CF542D7579C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CC7686A-2649-4753-B83F-92B825DA38CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CC7686A-2649-4753-B83F-92B825DA38CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CC7686A-2649-4753-B83F-92B825DA38CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CC7686A-2649-4753-B83F-92B825DA38CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{987A7719-A831-4254-905E-1FCA77CE3576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{987A7719-A831-4254-905E-1FCA77CE3576}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{987A7719-A831-4254-905E-1FCA77CE3576}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{987A7719-A831-4254-905E-1FCA77CE3576}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BCFE710-3879-4D1A-A010-0D05C7646361}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BCFE710-3879-4D1A-A010-0D05C7646361}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BCFE710-3879-4D1A-A010-0D05C7646361}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BCFE710-3879-4D1A-A010-0D05C7646361}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8340E934-DCB5-4067-8CDB-7B48B5D774B0} = {32BB8297-59F7-4210-8A5B-C40F4F5410C9}
+		{0324D58B-46BB-48E3-AA40-CF542D7579C4} = {32BB8297-59F7-4210-8A5B-C40F4F5410C9}
+		{9BCFE710-3879-4D1A-A010-0D05C7646361} = {32BB8297-59F7-4210-8A5B-C40F4F5410C9}
+		{7CC7686A-2649-4753-B83F-92B825DA38CA} = {32BB8297-59F7-4210-8A5B-C40F4F5410C9}
+		{987A7719-A831-4254-905E-1FCA77CE3576} = {32BB8297-59F7-4210-8A5B-C40F4F5410C9}
+	EndGlobalSection
+EndGlobal
