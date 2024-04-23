@@ -1,118 +1,165 @@
 ﻿using Newtonsoft.Json;
 using Serilog;
 using SpotifyAPI.Web;
+using SpotifyPlaylistUtilities.Models;
 
 namespace SpotifyPlaylistUtilities.Playlists;
 
-public class PlaylistManager
+public class PlaylistManager(ILogger logger, SpotifyClient spotifyClient)
 {
-    private readonly ILogger _logger;
-    private readonly SpotifyClient _spotifyClient;
-
-    public PlaylistManager(ILogger logger, SpotifyClient spotifyClient)
+    public async Task PrintAllPlaylistData()
     {
-        _logger = logger;
-        _spotifyClient = spotifyClient;
-    }
-    
-    public async Task<FullPlaylist> FindPlaylistById(string playlistId)
-    {
-        var playlists = await _spotifyClient.PaginateAll(await _spotifyClient.Playlists.CurrentUsers().ConfigureAwait(false));
+        var playlists = await spotifyClient.PaginateAll(await spotifyClient.Playlists.CurrentUsers().ConfigureAwait(false));
         
         foreach (var playlist in playlists)
         {
-            if (playlist.Id == playlistId)
-                return playlist;
+            logger.Information("In all playlists - Got: {PlaylistName} with ID: {PlaylistId}", playlist.Name, playlist.Id);
         }
-    
-        throw new Exception("Couldn't find playlist with ID matching Curated Weebletdays ID");
     }
     
-    public void BackupTracksToJsonFile(string playlistId, List<PlaylistTrack<IPlayableItem>> tracks)
+    public async Task<ManagedPlaylist> GetPlaylistByName(string playlistName)
+    {
+        var playlists = await spotifyClient.PaginateAll(await spotifyClient.Playlists.CurrentUsers().ConfigureAwait(false));
+        
+        foreach (var playlist in playlists)
+        {
+            logger.Debug("In all playlists - Got: {PlaylistName} with ID: {PlaylistId} [Trying to match: {MatchName}]", playlist.Name, playlist.Id, playlistName);
+        }
+        
+        foreach (var playlist in playlists)
+        {
+            if (playlist.Name != playlistName) continue;
+
+            var returnManagedPlaylist = new ManagedPlaylist(logger, spotifyClient, playlist);
+
+            await returnManagedPlaylist.FetchAllTracks();
+            
+            return returnManagedPlaylist;
+        }
+        
+        throw new ArgumentException("Couldn't find playlist with name of: {SuppliedName}", playlistName);
+    }
+    
+    public async Task<ManagedPlaylist> GetPlaylistById(string playlistId)
+    {
+        var playlists = await spotifyClient.PaginateAll(await spotifyClient.Playlists.CurrentUsers().ConfigureAwait(false));
+        
+        foreach (var playlist in playlists)
+        {
+            logger.Debug("In all playlists - Got: {PlaylistName} with ID: {PlaylistId} [Trying to match: {MatchId}]", playlist.Name, playlist.Id, playlistId);
+        }
+        
+        foreach (var playlist in playlists)
+        {
+            if (playlist.Id != playlistId) continue;
+
+            var returnManagedPlaylist = new ManagedPlaylist(logger, spotifyClient, playlist);
+
+            await returnManagedPlaylist.FetchAllTracks();
+            
+            return returnManagedPlaylist;
+        }
+
+        // Lazy rate limiting, sort of
+        await Task.Delay(2000);
+        
+        throw new ArgumentException("Couldn't find playlist with name of: {SuppliedName}", playlistId);
+    }
+    
+    public void BackupTracksToJsonFile(ManagedPlaylist playlistToBackup)
     {
         // JsonConvert to file with playlist ID
-        var jsonString = JsonConvert.SerializeObject(tracks);
+        var jsonString = JsonConvert.SerializeObject(playlistToBackup);
         
         var filePath = Path.GetDirectoryName(Environment.ProcessPath) ?? "ERROR_GETTING_APP_PATH";
+    
+        var safePlaylistName = playlistToBackup.Name;
 
-        var backupsPath = Path.Join(filePath, "Backups");
-
+        foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars())
+        {
+            safePlaylistName = safePlaylistName.Replace(invalidFileNameChar.ToString(), "_");
+        }
+        
+        var backupsPath = Path.Join(filePath, "Backups", "Playlists",  safePlaylistName);
+    
         Directory.CreateDirectory(backupsPath);
-
-        var filename = 
-            playlistId + "_" +
+        
+        var filename =
             DateTimeOffset.Now.ToString("s")
-            .Replace("T", "_T")
-            .Replace(":", "-")
-            + "_backup.json";
-
+                .Replace("T", "_T")
+                .Replace(":", "-")
+                + $"_{playlistToBackup.Id}.json";
+    
         var fullFilePath = Path.Join(backupsPath, filename);
         
         File.WriteAllText(fullFilePath, jsonString);
     }
-
-    public async Task RemoveTracksFrom(string playlistId, List<PlaylistTrack<IPlayableItem>> playlistTracks)
+    
+    public async Task DeleteAllPlaylistTracksOnSpotify(ManagedPlaylist playlistToClear)
     {
         var itemsToRemove = new List<string>();
         
-        foreach (var trackToRemove in playlistTracks)
+        foreach (var trackToRemove in playlistToClear.FetchedTracks)
         {
-            var fullTrackConverted = trackToRemove.Track as FullTrack;
+            logger.Debug("Attempting to remove track: {TrackName} from playlist: {PlaylistName}", trackToRemove.Name, playlistToClear.Name);
 
-            _logger.Information($"Attempting to remove: {fullTrackConverted?.Name}");
-
-            itemsToRemove.Add(fullTrackConverted?.Uri ?? "");
-
+            if (string.IsNullOrWhiteSpace(trackToRemove.Uri))
+                throw new ArgumentException("Track URI was empty");
+            
+            itemsToRemove.Add(trackToRemove.Uri);
+    
             if (itemsToRemove.Count < 100) continue;
             
             // If we hit capacity, add and clear
-            await Remove100ItemsFrom(playlistId, itemsToRemove);
+            await Remove100ItemsFrom(playlistToClear, itemsToRemove);
         }
          
         if (itemsToRemove.Count > 0)
-            await Remove100ItemsFrom(playlistId, itemsToRemove);
+            await Remove100ItemsFrom(playlistToClear, itemsToRemove);
     }
-    
-    public async Task<List<PlaylistTrack<IPlayableItem>>> GetAllPlaylistTracks(string playlistId)
+
+    public async Task AddTracksToPlaylistOnSpotify(ManagedPlaylist playlist, List<ManagedPlaylistTrack> tracks)
     {
-        var convertedPlaylist = await _spotifyClient.Playlists.Get(playlistId);
-
-        if (convertedPlaylist.Tracks is not null)
-        {
-            var allTracks = await _spotifyClient.PaginateAll(convertedPlaylist.Tracks);
-
-            var returnTracks = new List<PlaylistTrack<IPlayableItem>>();
+        var itemsToAdd = new List<string>();
         
-            var tracksCount = 0;
-            foreach (var playlistTrack in allTracks)
-            {
-                if (playlistTrack.Track is not FullTrack track) continue;
-
-                // All FullTrack properties are available
-                var artistString = track.Artists.First().Name;
+        foreach (var track in tracks)
+        {
+            logger.Debug("Attempting to add: {TrackName}", track.Name);
+    
+            itemsToAdd.Add(track.Uri);
+    
+            if (itemsToAdd.Count < 100) continue;
             
-                _logger.Information($"Track: #{tracksCount++}: {artistString} - {track.Name} | ID: {track.Id}");
-            
-                returnTracks.Add(playlistTrack);
-            }
-
-            // Lazy rate-limiting (not really, but at least between tasks) 
-            await Task.Delay(10000);
-
-            return returnTracks;
+            // If we hit capacity, add and clear
+            await Add100ItemsToPlaylist(itemsToAdd, playlist.Id);
         }
         
-        throw new Exception(
-            $"Attempted to get all playlist tracks for playlist ID: {playlistId} but got back null playlist");
+        // Add any remaining
+        if (itemsToAdd.Count > 0)
+            await Add100ItemsToPlaylist(itemsToAdd, playlist.Id);
     }
     
-    public async Task Remove100ItemsFrom(string playlistId, List<string> itemsToRemove)
+    private async Task Add100ItemsToPlaylist(List<string> itemsToAdd, string weebletdaysSelectedPlaylistId)
     {
-        await Task.Delay(1000);
+        // More lazy rate-limiting
+        await Task.Delay(2000);
+        
+        // Otherwise, since we can only add 100 at a time:
+        var itemsToAddRequest = new PlaylistAddItemsRequest(itemsToAdd);
+    
+        await spotifyClient.Playlists.AddItems(weebletdaysSelectedPlaylistId, itemsToAddRequest);
+    
+        itemsToAdd.Clear();
+    }
+    
+    private async Task Remove100ItemsFrom(ManagedPlaylist playlist, List<string> itemsToRemove)
+    {
+        // More lazy rate-limiting
+        await Task.Delay(2000);
             
         // Otherwise, since we can only remove 100 at a time:
         var itemsToRemoveRequest = new PlaylistRemoveItemsRequest();
-
+    
         itemsToRemoveRequest.Tracks = new List<PlaylistRemoveItemsRequest.Item>();
         
         foreach (var itemToRemove in itemsToRemove)
@@ -123,9 +170,9 @@ public class PlaylistManager
                     Uri = itemToRemove
                 });
         }
-
-        await _spotifyClient.Playlists.RemoveItems(playlistId, itemsToRemoveRequest);
-
+        
+        await spotifyClient.Playlists.RemoveItems(playlist.Id, itemsToRemoveRequest);
+    
         itemsToRemove.Clear();
     }
 }

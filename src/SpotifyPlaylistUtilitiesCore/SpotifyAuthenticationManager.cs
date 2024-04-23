@@ -6,25 +6,25 @@ using SpotifyAPI.Web.Auth;
 
 namespace SpotifyPlaylistUtilities;
 
-public class AuthenticationManager
+// ReSharper disable once InconsistentNaming because _logger is going to behave like a private field
+public class SpotifyAuthenticationManager(ILogger _logger)
 {
-    private readonly ILogger _logger;
     private string CredentialsPath => Path.Join(Path.GetDirectoryName(Environment.ProcessPath) ?? "ERROR_GETTING_APP_PATH", "credentials.json");
 
     private static readonly EmbedIOAuthServer Server = new(new Uri("http://localhost:5543/callback"), 5543);
 
     private SpotifyClient? _spotifyClient;
 
-    public AuthenticationManager(ILogger logger)
-    {
-        _logger = logger;
-    }
-    
+    /// <summary>
+    /// Checks that SECRETS.SPOTIFY_CLIENT_ID is not empty
+    /// Checks whether token needs to be refreshed
+    /// Saves updated credentials to json file
+    /// </summary>
+    /// <returns>Task with an authenticated spotify client</returns>
+    /// <exception cref="NullReferenceException">If the spotify client stays null after creation</exception>
+    /// <exception cref="AuthenticationException">If generated credentials.json cannot be created</exception>
     public async Task<SpotifyClient> GetAuthenticatedSpotifyClient()
     {
-        // This is a bug in the SWAN Logging library, need this hack to bring back the cursor in a console app
-        // AppDomain.CurrentDomain.ProcessExit += (_, _) => Exiting();
-
         if (string.IsNullOrEmpty(SECRETS.SPOTIFY_CLIENT_ID))
         {
             throw new NullReferenceException(
@@ -49,7 +49,7 @@ public class AuthenticationManager
         var json = await File.ReadAllTextAsync(CredentialsPath);
         var token = JsonConvert.DeserializeObject<PKCETokenResponse>(json);
 
-        var authenticator = new PKCEAuthenticator(SECRETS.SPOTIFY_CLIENT_ID!, token!);
+        var authenticator = new PKCEAuthenticator(SECRETS.SPOTIFY_CLIENT_ID, token!);
         authenticator.TokenRefreshed += (_, refreshedToken) => File.WriteAllText(CredentialsPath, JsonConvert.SerializeObject(refreshedToken));
 
         var config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
@@ -58,11 +58,11 @@ public class AuthenticationManager
         
         if (_spotifyClient is null)
             throw new NullReferenceException(
-                $"_spotifyClient was not set up in {nameof(AuthenticationManager)} and is null");
+                $"_spotifyClient was not set up in {nameof(SpotifyAuthenticationManager)} and is null");
         
         // Quick check
         var me = await _spotifyClient.UserProfile.Current();
-        _logger.Information($"Welcome {me.DisplayName} ({me.Id}), you're authenticated!");
+        _logger.Information("Welcome {DisplayName} with User ID:({Id}), you're authenticated!", me.DisplayName, me.Id);
 
         return _spotifyClient;
     }
@@ -74,11 +74,11 @@ public class AuthenticationManager
         var (verifier, challenge) = PKCEUtil.GenerateCodes();
 
         await Server.Start();
-        Server.AuthorizationCodeReceived += async (sender, response) =>
+        Server.AuthorizationCodeReceived += async (_, response) =>
         {
             await Server.Stop();
             var token = await new OAuthClient().RequestToken(
-                new PKCETokenRequest(SECRETS.SPOTIFY_CLIENT_ID!, response.Code, Server.BaseUri, verifier)
+                new PKCETokenRequest(SECRETS.SPOTIFY_CLIENT_ID, response.Code, Server.BaseUri, verifier)
             );
 
             await File.WriteAllTextAsync(CredentialsPath, JsonConvert.SerializeObject(token));
@@ -86,7 +86,7 @@ public class AuthenticationManager
             completedAuth = true;
         };
 
-        var request = new LoginRequest(Server.BaseUri, SECRETS.SPOTIFY_CLIENT_ID!, LoginRequest.ResponseType.Code)
+        var request = new LoginRequest(Server.BaseUri, SECRETS.SPOTIFY_CLIENT_ID, LoginRequest.ResponseType.Code)
         {
             CodeChallenge = challenge,
             CodeChallengeMethod = "S256",
@@ -101,7 +101,7 @@ public class AuthenticationManager
         }
         catch (Exception)
         {
-            _logger.Information("Unable to open URL, manually open: {0}", uri);
+            _logger.Information("Unable to open URL, manually open: {Uri}", uri);
         }
 
         // Wait until auth is done so program doesn't try to continue without auth
