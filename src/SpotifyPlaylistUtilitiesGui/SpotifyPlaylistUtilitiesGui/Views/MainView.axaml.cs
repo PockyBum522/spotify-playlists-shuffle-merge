@@ -53,10 +53,27 @@ public partial class MainView : UserControl
             .WithIdentity("weebletdaysDailyJob", "group1")
             .Build();
 
+        // Set up when to run it (at 3am)
+        var runAt = new DateTimeOffset(
+            DateTimeOffset.Now.Year,
+            DateTimeOffset.Now.Month,
+            DateTimeOffset.Now.Day,
+            3,
+            0,
+            0,
+            new TimeSpan(-5, 0, 0)
+        );
+
+        // If we're beyond 3am, then set it to the next 3am (Tomorrow)
+        if (DateTimeOffset.Now > runAt)
+            runAt += TimeSpan.FromDays(1);
+
+        Console.WriteLine($"Will run next at: {runAt.ToString()}");
+        
         // Trigger the job to run now, and then repeat
         var trigger = TriggerBuilder.Create()
             .WithIdentity("weebletdaysDailyJobTrigger", "group1")
-            .StartNow()
+            .StartAt(runAt)
             .WithSimpleSchedule(x => x
                 .WithIntervalInHours(24)
                 .RepeatForever())
