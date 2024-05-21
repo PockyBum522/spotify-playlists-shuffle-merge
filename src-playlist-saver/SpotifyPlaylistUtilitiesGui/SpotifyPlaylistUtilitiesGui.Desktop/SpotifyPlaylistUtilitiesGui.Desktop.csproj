@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <!--If you are willing to use Windows/MacOS native APIs you will need to create 3 projects.
+        One for Windows with net8.0-windows TFM, one for MacOS with net8.0-macos and one with net8.0 TFM for Linux.-->
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)"/>
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Quartz" Version="3.8.1" />
+        <PackageReference Include="Serilog" Version="4.0.0-dev-02149" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="5.1.0-dev-00943" />
+        <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.1-dev-00972" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\SpotifyPlaylistUtilitiesGui\SpotifyPlaylistUtilitiesGui.csproj"/>
+    </ItemGroup>
+</Project>
