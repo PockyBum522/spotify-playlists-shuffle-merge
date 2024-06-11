@@ -77,7 +77,7 @@ public class PlaylistManager(ILogger logger, SpotifyClient spotifyClient)
 
         foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars())
         {
-            safePlaylistName = safePlaylistName.Replace(invalidFileNameChar.ToString(), "_");
+            safePlaylistName = safePlaylistName.Replace(invalidFileNameChar.ToString(), "_").Trim();
         }
         
         var backupsPath = Path.Join(filePath, "Backups", "Playlists",  safePlaylistName);
