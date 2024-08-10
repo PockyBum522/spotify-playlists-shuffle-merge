@@ -68,8 +68,8 @@ public partial class MainView : UserControl
         if (DateTimeOffset.Now > runAt)
             runAt += TimeSpan.FromDays(1);
 
-        // To run in one minute, uncomment this:
-        // runAt = DateTimeOffset.Now + TimeSpan.FromMinutes(1);
+        // To run immediately, uncomment this:
+        runAt = DateTimeOffset.Now + TimeSpan.FromSeconds(10);
         
         Console.WriteLine($"Will run next at: {runAt.ToString()}");
         
