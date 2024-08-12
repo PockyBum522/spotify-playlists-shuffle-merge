@@ -25,14 +25,18 @@ public class SpotifyAuthenticationManager(ILogger _logger)
     /// <exception cref="AuthenticationException">If generated credentials.json cannot be created</exception>
     public async Task<SpotifyClient> GetAuthenticatedSpotifyClient()
     {
+        // Just set up a new token every time. Nothing we're doing needs anything to be fast anyways and this might fix the invalid_grant problems
+        _spotifyClient = null;
+        File.Delete(CredentialsPath);
+        
         if (string.IsNullOrEmpty(SECRETS.SPOTIFY_CLIENT_ID))
         {
             throw new NullReferenceException(
                 "Please set SPOTIFY_CLIENT_ID via SECRETS.cs before starting the program"
             );
         }
-
-        if (_spotifyClient is not null) return _spotifyClient;
+        
+        //if (_spotifyClient is not null) return _spotifyClient;
 
         if (!File.Exists(CredentialsPath))
         {
@@ -54,7 +58,7 @@ public class SpotifyAuthenticationManager(ILogger _logger)
 
         var config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
 
-        _spotifyClient ??= new SpotifyClient(config);
+        _spotifyClient = new SpotifyClient(config);
         
         if (_spotifyClient is null)
             throw new NullReferenceException(
