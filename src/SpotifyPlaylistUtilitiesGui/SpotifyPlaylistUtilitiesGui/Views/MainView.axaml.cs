@@ -69,7 +69,7 @@ public partial class MainView : UserControl
             runAt += TimeSpan.FromDays(1);
 
         // To run immediately, uncomment this:
-        runAt = DateTimeOffset.Now + TimeSpan.FromSeconds(10);
+        //runAt = DateTimeOffset.Now + TimeSpan.FromSeconds(10);
         
         Console.WriteLine($"Will run next at: {runAt.ToString()}");
         
