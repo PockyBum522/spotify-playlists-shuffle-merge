@@ -142,7 +142,8 @@ public class PlaylistShuffler
         {
             var trackToDecrement = existingSavedTrackWeights[i];
             
-            trackToDecrement.PickWeight -= 0.02;
+            if (trackToDecrement.PickWeight > 0)
+                trackToDecrement.PickWeight -= 0.01;
 
             _logger.Debug(
                 "Decrementing track weight of {TrackId}, is now: {NewWeight}", trackToDecrement.Id, trackToDecrement.PickWeight);
