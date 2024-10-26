@@ -25,10 +25,6 @@ public class SpotifyAuthenticationManager(ILogger _logger)
     /// <exception cref="AuthenticationException">If generated credentials.json cannot be created</exception>
     public async Task<SpotifyClient> GetAuthenticatedSpotifyClient()
     {
-        // Just set up a new token every time. Nothing we're doing needs anything to be fast anyways and this might fix the invalid_grant problems
-        _spotifyClient = null;
-        File.Delete(CredentialsPath);
-        
         if (string.IsNullOrEmpty(SECRETS.SPOTIFY_CLIENT_ID))
         {
             throw new NullReferenceException(
